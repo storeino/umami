@@ -1,12 +1,12 @@
-import WebsiteReportsPage from './WebsiteReportsPage';
 import { Metadata } from 'next';
+import EventsPage from './EventsPage';
 
 export default async function ({ params }: { params: { websiteId: string } }) {
   const { websiteId } = await params;
 
-  return <WebsiteReportsPage websiteId={websiteId} />;
+  return <EventsPage websiteId={websiteId} />;
 }
 
 export const metadata: Metadata = {
-  title: 'Website Reports',
+  title: 'Event Data',
 };
