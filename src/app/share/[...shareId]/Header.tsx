@@ -1,5 +1,6 @@
-import LanguageButton from 'components/input/LanguageButton';
-import SettingsButton from 'components/input/SettingsButton';
+import LanguageButton from '@/components/input/LanguageButton';
+import SettingsButton from '@/components/input/SettingsButton';
+// eslint-disable-next-line css-modules/no-unused-class
 import styles from './Header.module.css';
 
 export function Header() {
