@@ -1,14 +1,14 @@
-import { Dropdown, Icon, Icons, Item, Text } from 'react-basics';
-import LinkButton from '@/components/common/LinkButton';
-import { useLocale, useMessages, useNavigation } from '@/components/hooks';
+import { useDateRange, useMessages, useNavigation } from '@/components/hooks';
+import { Grid, GridRow } from '@/components/layout/Grid';
 import SideNav from '@/components/layout/SideNav';
 import BrowsersTable from '@/components/metrics/BrowsersTable';
+import ChangeLabel from '@/components/metrics/ChangeLabel';
 import CitiesTable from '@/components/metrics/CitiesTable';
 import CountriesTable from '@/components/metrics/CountriesTable';
 import DevicesTable from '@/components/metrics/DevicesTable';
 import EventsTable from '@/components/metrics/EventsTable';
-import HostsTable from '@/components/metrics/HostsTable';
 import LanguagesTable from '@/components/metrics/LanguagesTable';
+import MetricsTable from '@/components/metrics/MetricsTable';
 import OSTable from '@/components/metrics/OSTable';
 import PagesTable from '@/components/metrics/PagesTable';
 import QueryParametersTable from '@/components/metrics/QueryParametersTable';
@@ -16,17 +16,16 @@ import ReferrersTable from '@/components/metrics/ReferrersTable';
 import RegionsTable from '@/components/metrics/RegionsTable';
 import ScreenTable from '@/components/metrics/ScreenTable';
 import TagsTable from '@/components/metrics/TagsTable';
-import ChannelsTable from '@/components/metrics/ChannelsTable';
-import styles from './WebsiteExpandedView.module.css';
+import { getCompareDate } from '@/lib/date';
+import { formatNumber } from '@/lib/format';
+import { useState } from 'react';
+import useStore from '@/store/websites';
+import styles from './WebsiteCompareTables.module.css';
 
 const views = {
   url: PagesTable,
-  entry: PagesTable,
-  exit: PagesTable,
   title: PagesTable,
   referrer: ReferrersTable,
-  grouped: ReferrersTable,
-  host: HostsTable,
   browser: BrowsersTable,
   os: OSTable,
   device: DevicesTable,
@@ -38,23 +37,18 @@ const views = {
   event: EventsTable,
   query: QueryParametersTable,
   tag: TagsTable,
-  channel: ChannelsTable,
 };
 
-export default function WebsiteExpandedView({
-  websiteId,
-  domainName,
-}: {
-  websiteId: string;
-  domainName?: string;
-}) {
-  const { dir } = useLocale();
+export function WebsiteCompareTables({ websiteId }: { websiteId: string }) {
+  const [data, setData] = useState([]);
+  const { dateRange } = useDateRange(websiteId);
+  const dateCompare = useStore(state => state[websiteId]?.dateCompare);
   const { formatMessage, labels } = useMessages();
   const {
-    router,
     renderUrl,
     query: { view },
   } = useNavigation();
+  const Component: typeof MetricsTable = views[view || 'url'] || (() => null);
 
   const items = [
     {
@@ -66,11 +60,6 @@ export default function WebsiteExpandedView({
       key: 'referrer',
       label: formatMessage(labels.referrers),
       url: renderUrl({ view: 'referrer' }),
-    },
-    {
-      key: 'channel',
-      label: formatMessage(labels.channels),
-      url: renderUrl({ view: 'channel' }),
     },
     {
       key: 'browser',
@@ -134,51 +123,51 @@ export default function WebsiteExpandedView({
     },
   ];
 
-  const DetailsComponent = views[view] || (() => null);
+  const renderChange = ({ x, y }) => {
+    const prev = data.find(d => d.x === x)?.y;
+    const value = y - prev;
+    const change = Math.abs(((y - prev) / prev) * 100);
 
-  const handleChange = (view: any) => {
-    router.push(renderUrl({ view }));
+    return !isNaN(change) && <ChangeLabel value={value}>{formatNumber(change)}%</ChangeLabel>;
   };
 
-  const renderValue = (value: string) => items.find(({ key }) => key === value)?.label;
+  const { startDate, endDate } = getCompareDate(
+    dateCompare,
+    dateRange.startDate,
+    dateRange.endDate,
+  );
+
+  const params = {
+    startAt: startDate.getTime(),
+    endAt: endDate.getTime(),
+  };
 
   return (
-    <div className={styles.layout}>
-      <div className={styles.menu}>
-        <LinkButton
-          href={renderUrl({ view: undefined })}
-          className={styles.back}
-          variant="quiet"
-          scroll={false}
-        >
-          <Icon rotate={dir === 'rtl' ? 0 : 180}>
-            <Icons.ArrowRight />
-          </Icon>
-          <Text>{formatMessage(labels.back)}</Text>
-        </LinkButton>
+    <Grid className={styles.container}>
+      <GridRow columns="compare">
         <SideNav className={styles.nav} items={items} selectedKey={view} shallow={true} />
-        <Dropdown
-          className={styles.dropdown}
-          items={items}
-          value={view}
-          renderValue={renderValue}
-          onChange={handleChange}
-          alignment="end"
-        >
-          {({ key, label }) => <Item key={key}>{label}</Item>}
-        </Dropdown>
-      </div>
-      <div className={styles.content}>
-        <DetailsComponent
-          websiteId={websiteId}
-          domainName={domainName}
-          animate={false}
-          virtualize={true}
-          itemCount={25}
-          allowFilter={true}
-          allowSearch={true}
-        />
-      </div>
-    </div>
+        <div>
+          <div className={styles.title}>{formatMessage(labels.previous)}</div>
+          <Component
+            websiteId={websiteId}
+            limit={20}
+            showMore={false}
+            onDataLoad={setData}
+            params={params}
+          />
+        </div>
+        <div>
+          <div className={styles.title}> {formatMessage(labels.current)}</div>
+          <Component
+            websiteId={websiteId}
+            limit={20}
+            showMore={false}
+            renderChange={renderChange}
+          />
+        </div>
+      </GridRow>
+    </Grid>
   );
 }
+
+export default WebsiteCompareTables;
