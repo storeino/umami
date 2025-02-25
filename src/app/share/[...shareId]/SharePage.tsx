@@ -1,9 +1,10 @@
 'use client';
-import WebsiteDetails from 'app/(main)/websites/[websiteId]/WebsiteDetails';
-import { useShareToken } from 'components/hooks';
-import Page from 'components/layout/Page';
+import WebsiteDetailsPage from '../../(main)/websites/[websiteId]/WebsiteDetailsPage';
+import { useShareToken } from '@/components/hooks';
+import Page from '@/components/layout/Page';
 import Header from './Header';
 import styles from './SharePage.module.css';
+import { WebsiteProvider } from '@/app/(main)/websites/[websiteId]/WebsiteProvider';
 
 export default function SharePage({ shareId }) {
   const { shareToken, isLoading } = useShareToken(shareId);
@@ -11,11 +12,14 @@ export default function SharePage({ shareId }) {
   if (isLoading || !shareToken) {
     return null;
   }
+
   return (
     <div className={styles.container}>
       <Page>
         <Header />
-        <WebsiteDetails websiteId={shareToken.websiteId} />
+        <WebsiteProvider websiteId={shareToken.websiteId}>
+          <WebsiteDetailsPage websiteId={shareToken.websiteId} />
+        </WebsiteProvider>
       </Page>
     </div>
   );
