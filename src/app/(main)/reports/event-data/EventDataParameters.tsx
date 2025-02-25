@@ -1,9 +1,9 @@
 import { useContext } from 'react';
 import { Form, FormRow, FormButtons, SubmitButton, PopupTrigger, Icon, Popup } from 'react-basics';
-import Empty from 'components/common/Empty';
-import Icons from 'components/icons';
-import { useApi, useMessages } from 'components/hooks';
-import { DATA_TYPES, REPORT_PARAMETERS } from 'lib/constants';
+import Empty from '@/components/common/Empty';
+import Icons from '@/components/icons';
+import { useApi, useMessages } from '@/components/hooks';
+import { DATA_TYPES, REPORT_PARAMETERS } from '@/lib/constants';
 import { ReportContext } from '../[reportId]/Report';
 import FieldAddForm from '../[reportId]/FieldAddForm';
 import ParameterList from '../[reportId]/ParameterList';
@@ -48,7 +48,7 @@ export function EventDataParameters() {
     groups,
   };
 
-  const handleSubmit = values => {
+  const handleSubmit = (values: any) => {
     runReport(values);
   };
 
@@ -75,8 +75,8 @@ export function EventDataParameters() {
           {(close: () => void) => {
             return (
               <FieldAddForm
-                fields={data.map(({ eventKey, eventDataType }) => ({
-                  name: eventKey,
+                fields={data.map(({ dataKey, eventDataType }) => ({
+                  name: dataKey,
                   type: DATA_TYPES[eventDataType],
                 }))}
                 group={group}
