@@ -1,21 +1,21 @@
-import { useApi, useMessages } from '@/components/hooks';
 import TypeConfirmationForm from '@/components/common/TypeConfirmationForm';
+import { useApi, useMessages } from '@/components/hooks';
 
 const CONFIRM_VALUE = 'DELETE';
 
-export function WebsiteDeleteForm({
-  websiteId,
+export function TeamDeleteForm({
+  teamId,
   onSave,
   onClose,
 }: {
-  websiteId: string;
+  teamId: string;
   onSave?: () => void;
   onClose?: () => void;
 }) {
-  const { formatMessage, labels } = useMessages();
+  const { labels, formatMessage } = useMessages();
   const { del, useMutation } = useApi();
-  const { mutate, isPending, error } = useMutation({
-    mutationFn: () => del(`/websites/${websiteId}`),
+  const { mutate, error, isPending } = useMutation({
+    mutationFn: () => del(`/teams/${teamId}`),
   });
 
   const handleConfirm = async () => {
@@ -40,4 +40,4 @@ export function WebsiteDeleteForm({
   );
 }
 
-export default WebsiteDeleteForm;
+export default TeamDeleteForm;
